@@ -1,15 +1,14 @@
 [![License](https://img.shields.io/github/license/toolarium/toolarium-java-runner)](https://github.com/toolarium/toolarium-java-runner/blob/master/LICENSE)
-[![Maven Central](https://img.shields.io/maven-central/v/com.github.toolarium/toolarium-java-runner/0.9.7)](https://search.maven.org/artifact/com.github.toolarium/toolarium-java-runner/0.9.7/jar)
 
 # toolarium-java-runner
 
 The toolarium java-runner script which can be used in a container to start a java process.
 
 
-## Installing common-build
+## Installing java-runner
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/toolarium/toolarium-java-runner/master/bin/java-runner | /bin/sh
+curl -fsSL https://raw.githubusercontent.com/toolarium/toolarium-java-runner/master/bin/java-runner > java-runner && chmod +x java-runner
 ```
 Currenlty it's tested on debian, ubuntu, centos and fedora.
 

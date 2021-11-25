@@ -2,7 +2,6 @@
 [![Maven Central](https://img.shields.io/maven-central/v/com.github.toolarium/toolarium-java-runner/0.9.7)](https://search.maven.org/artifact/com.github.toolarium/toolarium-java-runner/0.9.7/jar)
 
 # toolarium-java-runner
-[![License](https://img.shields.io/github/license/toolarium/common-build)](https://opensource.org/licenses/MIT)
 
 The toolarium java-runner script which can be used in a container to start a java process.
 
@@ -10,12 +9,7 @@ The toolarium java-runner script which can be used in a container to start a jav
 ## Installing common-build
 
 ```bash
-curl -fsSL https://git.io/JJezw | /bin/bash
-```
-
-or with full link
-```bash
-curl -fsSL https://raw.githubusercontent.com/toolarium/common-build/master/bin/cb-install | /bin/bash
+curl -fsSL https://raw.githubusercontent.com/toolarium/toolarium-java-runner/master/bin/java-runner | /bin/sh
 ```
 Currenlty it's tested on debian, ubuntu, centos and fedora.
 

@@ -171,6 +171,7 @@ existBinary() {
     if [ $? -eq 0 ]; then
         result=$(whereis -b "$1" 2>/dev/null | awk '{print $2}')
         [ "$2" = "true" ] || result="${result##*.exe}"
+        [ -d "$result" ] && result=""
         [ -n "$result" ] && echo "$result"
         [ -n "$result" ] && return 0 || return 1
     else
@@ -182,6 +183,7 @@ existBinary() {
 
         result=$(which "$1" 2>/dev/null)
         [ "$2" = "true" ] || result="${result##*.exe}"
+        [ -d "$result" ] && result=""
         [ -n "$result" ] && echo "$result"
         [ $? -eq 0 ] && return 0 || return 1
     fi

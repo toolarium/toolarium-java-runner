@@ -207,7 +207,7 @@ addLogLevel() {
 # Read version
 #########################################################################
 readVersion() {
-    [ -n "$SCRIPT_VERSION_NUMBER" ] && versionNumber="${SCRIPT_VERSION_NUMBER}" || versionNumber=unknown
+    [ -n "$SCRIPT_VERSION_NUMBER" ] && versionNumber="${SCRIPT_VERSION_NUMBER}" || versionNumber="1.0.0"
     [ -r "${ABS_PROG_PATH}/VERSION" ] && VERSIONPATH="${ABS_PROG_PATH}/VERSION"
     [ -r "${ABS_PROG_PATH}/../VERSION" ] && VERSIONPATH="${ABS_PROG_PATH}/../VERSION"
     

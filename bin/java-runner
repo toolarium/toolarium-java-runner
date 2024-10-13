@@ -48,8 +48,8 @@ printUsage() {
     echo " --version                     Print the version information."
     echo " --verbose                     Enablesv verbose mode."
     echo " --nocolor                     Disable colored output. This is the same behavior as when TERM variable is set to"
-	echo " --executable                  Defines the executable, e.g. java."
 	echo "                               a non xterm. The color pallet can be set by COLOR_PALLET variable, default 1 (dark 2)."
+	echo " --executable                  Defines the executable, e.g. java."
     echo " --proxyHost <hostname>        Defines the proxy host for the process, e.g. myhost.com."
     echo "                               If the hostname is missing, it will be ignored."
     echo " --proxyPort <port>            Defines the proxy port for the process, e.g. 8080."
@@ -65,6 +65,7 @@ printUsage() {
     echo " --logLevel LEVEL[,package]    The log level. Defines the log level. Multiple entries with packages are possible:"
     echo "                               e.g. --logLevel INFO --logLevel WARN,my.package.name"
     echo "                               In case of an empty level, it will be ignored."
+    echo " --options <options>           Defines additional java options, e.g. --options \"-Xms2m -Xmx10m\""
     echo ""
 }
 
@@ -232,7 +233,7 @@ trap 'exithandler $?; exit' 0
 trap 'errorhandler $?; exit' 1 2 3 15
 
 EXECUTABLE="";JARFILE="";JAVAAGENT="";JAVA_OPTIONS="";PARAMTERS=""
-proxyHost="";proxyPort="";nonProxyHosts="";httpagent="";keepAlive="";maxConnections="";maxRedirects="";logLevel=""
+proxyHost="";proxyPort="";nonProxyHosts="";httpagent="";keepAlive="";maxConnections="";maxRedirects="";logLevel=""; javaOptions=""
 
 CB_START_TIMESTAMP=$(getTimestamp)
 while [ $# -gt 0 ]; do
@@ -253,6 +254,7 @@ while [ $# -gt 0 ]; do
     --maxConnections)[ -n "$2" ] && ! [ -z $(echo "$2"|grep -e "^--" -v) ] && maxConnections="$2" && shift;;
     --maxRedirects)  [ -n "$2" ] && ! [ -z $(echo "$2"|grep -e "^--" -v) ] && maxRedirects="$2" && shift;;
     --logLevel)      [ -n "$2" ] && ! [ -z $(echo "$2"|grep -e "^--" -v) ] && addLogLevel "$2" && shift;;
+    --options)       [ -n "$2" ] && ! [ -z $(echo "$2") ] && javaOptions="$2" && shift;;
     -*)              parameterFailed "Invalid parameter $1"; exit 1;;
     *)               PARAMTERS="${PARAMTERS} $1";;
     esac
@@ -278,6 +280,7 @@ JAVAAGENT="${JAVAAGENT# }"
 [ -n "$maxConnections" ] && JAVA_OPTIONS="${JAVA_OPTIONS} -Dhttp.maxConnections=$maxConnections" # e.g. "-Dhttp.maxConnections=5"
 [ -n "$maxRedirects" ] && JAVA_OPTIONS="${JAVA_OPTIONS} -Dhttp.maxRedirects=$maxRedirects" # e.g. "-Dhttp.maxRedirects=20"
 [ -n "$logLevel" ] && JAVA_OPTIONS="${JAVA_OPTIONS} $logLevel"
+[ -n "$javaOptions" ] && JAVA_OPTIONS="${JAVA_OPTIONS} $javaOptions"
 JAVA_OPTIONS="${JAVA_OPTIONS# }"
 
 [ "$CB_VERBOSE" = "true" ] && printf "${CB_LINEHEADER}Set java options    [${NO_COLOR}$JAVA_OPTIONS${HIGHLITE_LEVEL}]${NO_COLOR}\n"

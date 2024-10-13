@@ -2,7 +2,7 @@
 
 #########################################################################
 #
-# java-runner
+# toolarium-java-runner
 #
 # Copyright by toolarium, all rights reserved.
 #
@@ -44,27 +44,27 @@ printUsage() {
     echo "The arguments are passed as java arguements."
 	echo ""
     echo "Overview of the available OPTIONs:"
-    echo " -h, --help                  Show this help message."
-    echo " --version                   Print the version information."
-    echo " --verbose                   Enablesv verbose mode."
-    echo " --nocolor                   Disable colored output. This is the same behavior as when TERM variable is set to"
-	echo " --executable                Defines the executable, e.g. java."
-	echo "                             a non xterm. The color pallet can be set by COLOR_PALLET variable, default 1 (dark 2)."
-    echo " --proxyHost <hostname>      Defines the proxy host for the process, e.g. myhost.com."
-    echo "                             If the hostname is missing, it will be ignored."
-    echo " --proxyPort <port>          Defines the proxy port for the process, e.g. 8080."
-    echo "                             If the port is missing, it will be ignored."
-    echo " --nonProxyHosts <list>      Defines the a list of non proxy hosts (separated by comma character):"
-    echo "                             e.g. localhost,.cluster.local,*.acpt.app.com"
-    echo "                             In case of an empty list, it will be ignored."
-    echo " --javaagent <jarpath>       Defines the path to the java agent jar, e.g. my-agent.jar."
-    echo " --agent <http agent name>   Defines the http agent name, e.g. Java."
-    echo " --keepAlive <true or false> Defines the http keep alive, e.g. true."
-    echo " --maxConnections <number>   Defines the number of http max connections, e.g. 5."
-    echo " --maxRedirects <number>     Defines the number of http max redirects, e.g. 20."
-    echo " --logLevel LEVEL[,package]  The log level. Defines the log level. Multiple entries with packages are possible:"
-    echo "                             e.g. --logLevel INFO --logLevel WARN,my.package.name"
-    echo "                             In case of an empty level, it will be ignored."
+    echo " -h, --help                    Show this help message."
+    echo " --version                     Print the version information."
+    echo " --verbose                     Enablesv verbose mode."
+    echo " --nocolor                     Disable colored output. This is the same behavior as when TERM variable is set to"
+	echo " --executable                  Defines the executable, e.g. java."
+	echo "                               a non xterm. The color pallet can be set by COLOR_PALLET variable, default 1 (dark 2)."
+    echo " --proxyHost <hostname>        Defines the proxy host for the process, e.g. myhost.com."
+    echo "                               If the hostname is missing, it will be ignored."
+    echo " --proxyPort <port>            Defines the proxy port for the process, e.g. 8080."
+    echo "                               If the port is missing, it will be ignored."
+    echo " --nonProxyHosts <list>        Defines the a list of non proxy hosts (separated by comma character):"
+    echo "                               e.g. localhost,.cluster.local,*.acpt.app.com"
+    echo "                               In case of an empty list, it will be ignored."
+    echo " --javaagent <jarpath>         Defines the path to the java agent jar, e.g. my-agent.jar."
+    echo " --httpagent <http agent name> Defines the http agent name, e.g. Java."
+    echo " --keepAlive <true or false>   Defines the http keep alive, e.g. true."
+    echo " --maxConnections <number>     Defines the number of http max connections, e.g. 5."
+    echo " --maxRedirects <number>       Defines the number of http max redirects, e.g. 20."
+    echo " --logLevel LEVEL[,package]    The log level. Defines the log level. Multiple entries with packages are possible:"
+    echo "                               e.g. --logLevel INFO --logLevel WARN,my.package.name"
+    echo "                               In case of an empty level, it will be ignored."
     echo ""
 }
 
@@ -109,8 +109,7 @@ colorIt
 #########################################################################
 # parameterFailed
 #########################################################################
-parameterFailed()
-{
+parameterFailed() {
     printf "${CB_LINEHEADER}Parameter faild: $1.${NO_COLOR}\n\n"
     printUsage
 }
@@ -129,6 +128,8 @@ errorhandler() {
 # exit handler
 #########################################################################
 exithandler() {
+    exitCode=$?
+
     [ -n "$DEBUG" ] && printf "${CB_LINEHEADER}ENDED${NO_COLOR}"
 
     if [ -r "$PID_FILE" ]; then
@@ -138,14 +139,13 @@ exithandler() {
     fi
 
     if [ "$printEndedMessage" = "true" ]; then
-    
-
         CB_END_TIMESTAMP=$(getTimestamp)
         CB_DUATION=$(eval "expr $(echo $CB_END_TIMESTAMP | sed 's/[ |.|:|-]*//g') - $(echo $CB_START_TIMESTAMP | sed 's/[ |.|:|-]*//g')")
         CB_DUATION=$(printf %.3f "${CB_DUATION}e-3")
         printf "%s$CB_LINE\n"
-        printf "   ${INFO_LEVEL}ENDED${NO_COLOR} ${TITLE_LEVEL}${CB_END_TIMESTAMP} $TIMEZONE${NO_COLOR}, duration ${TITLE_LEVEL}${CB_DUATION} sec${NO_COLOR}, exit code: ${TITLE_LEVEL}$exitCode${NO_COLOR}\n"
+        printf "   ${INFO_LEVEL}ENDED${NO_COLOR} ${TITLE_LEVEL}${CB_END_TIMESTAMP} $TIMEZONE${NO_COLOR}, duration ${TITLE_LEVEL}${CB_DUATION} sec${NO_COLOR}, exit: ${TITLE_LEVEL}$exitCode${NO_COLOR}\n"
         printf "%s$CB_LINE\n"
+        printEndedMessage="false"
     fi
     [ -n "$exitCode" ] && exit $exitCode
 }
@@ -166,24 +166,22 @@ existBinary() {
     if ! [ "${1#*/}" = "$1" ]; then
        ! [ -x "$1" ] && return 1
 	fi
-	
+
     eval whereis whereis >/dev/null 2>&1
     if [ $? -eq 0 ]; then
         result=$(whereis -b "$1" 2>/dev/null | awk '{print $2}')
         [ "$2" = "true" ] || result="${result##*.exe}"
-        [ -d "$result" ] && result=""
         [ -n "$result" ] && echo "$result"
         [ -n "$result" ] && return 0 || return 1
     else
         which which >/dev/null 2>&1
         if  ! [ $? -eq 0 ]; then
-            printf "${CB_LINEHEADER}Can not find which nor whereis command!${NO_COLOR}\n" 
+            printf "${CB_LINEHEADER}Can not find which nor whereis command!${NO_COLOR}\n"
             return 1
         fi
 
         result=$(which "$1" 2>/dev/null)
         [ "$2" = "true" ] || result="${result##*.exe}"
-        [ -d "$result" ] && result=""
         [ -n "$result" ] && echo "$result"
         [ $? -eq 0 ] && return 0 || return 1
     fi
@@ -194,7 +192,7 @@ existBinary() {
 # Add the log level
 #########################################################################
 addLogLevel() {
-    ! [ -n "$1" ] && return
+    ! [ -n "$1" ] && return 1
     packageLevel=$(echo $1|cut -d '=' -f1|cut -d ',' -f1)
     packageName=$(echo $1|cut -d '=' -f2|cut -d ',' -f2)
 
@@ -202,6 +200,8 @@ addLogLevel() {
     # "-Dquarkus.log.category.\"org.hibernate\".level=TRACE"
     [ "$packageLevel" = "$packageName" ] && packageName="" || packageName="category.\"$packageName\"."
     logLevel="${logLevel} -Dquarkus.log.${packageName}level=${packageLevel}"
+    logLevel="${logLevel# }"
+	return 0
 }
 
 
@@ -212,7 +212,7 @@ readVersion() {
     [ -n "$SCRIPT_VERSION_NUMBER" ] && versionNumber="${SCRIPT_VERSION_NUMBER}" || versionNumber="1.0.0"
     [ -r "${ABS_PROG_PATH}/VERSION" ] && VERSIONPATH="${ABS_PROG_PATH}/VERSION"
     [ -r "${ABS_PROG_PATH}/../VERSION" ] && VERSIONPATH="${ABS_PROG_PATH}/../VERSION"
-    
+
     if [ -r "${VERSIONPATH}" ]; then
         majorNumber=$(cat "${VERSIONPATH}" | tr -d '\r' | grep major.number | awk '{print $3}')
         minorNumber=$(cat "${VERSIONPATH}" | tr -d '\r' | grep minor.number | awk '{print $3}')
@@ -220,7 +220,7 @@ readVersion() {
         qualifier=$(cat "${VERSIONPATH}" | tr -d '\r' | grep qualifier | awk '{print $3}')
         versionNumber=$majorNumber.$minorNumber.$revisionNumber
     fi
-    
+
     echo "$versionNumber"
 }
 
@@ -232,7 +232,7 @@ trap 'exithandler $?; exit' 0
 trap 'errorhandler $?; exit' 1 2 3 15
 
 EXECUTABLE="";JARFILE="";JAVAAGENT="";JAVA_OPTIONS="";PARAMTERS=""
-proxyHost="";proxyPort="";nonProxyHosts="";agent="";keepAlive="";maxConnections="";maxRedirects="";logLevel=""
+proxyHost="";proxyPort="";nonProxyHosts="";httpagent="";keepAlive="";maxConnections="";maxRedirects="";logLevel=""
 
 CB_START_TIMESTAMP=$(getTimestamp)
 while [ $# -gt 0 ]; do
@@ -242,17 +242,17 @@ while [ $# -gt 0 ]; do
     --version)       echo "toolarium java runner $(readVersion)" && exit 0;;
     --verbose)       CB_VERBOSE="true";;
     --nocolor)       COLOR_PALLET="no"; colorIt;;
-    --executable)    [ -n "$2" ] && ! [ -z $(echo "$2"|grep -e "^--" -v) ] && EXECUTABLE="$2";shift;;	
-    --jar)           [ -n "$2" ] && ! [ -z $(echo "$2"|grep -e "^--" -v) ] && JARFILE="$2";shift;;	
-    --javaagent)     [ -n "$2" ] && ! [ -z $(echo "$2"|grep -e "^--" -v) ] && JAVAAGENT="-javaagent:$2";shift;;	
-    --proxyHost)     [ -n "$2" ] && ! [ -z $(echo "$2"|grep -e "^--" -v) ] && proxyHost="$2";shift;;
-    --proxyPort)     [ -n "$2" ] && ! [ -z $(echo "$2"|grep -e "^--" -v) ] && proxyPort="$2";shift;;
-    --nonProxyHosts) [ -n "$2" ] && ! [ -z $(echo "$2"|grep -e "^--" -v) ] && nonProxyHosts=$(echo $2| cut -d '=' -f2|sed 's/,/\|/g');shift;;
-    --agent)         [ -n "$2" ] && ! [ -z $(echo "$2"|grep -e "^--" -v) ] && agent="$2";shift;;
-    --keepAlive)     [ -n "$2" ] && ! [ -z $(echo "$2"|grep -e "^--" -v) ] && keepAlive="$2";shift;;
-    --maxConnections)[ -n "$2" ] && ! [ -z $(echo "$2"|grep -e "^--" -v) ] && maxConnections="$2";shift;;
-    --maxRedirects)  [ -n "$2" ] && ! [ -z $(echo "$2"|grep -e "^--" -v) ] && maxRedirects="$2";shift;;
-    --logLevel)      [ -n "$2" ] && ! [ -z $(echo "$2"|grep -e "^--" -v) ] && addLogLevel "$2";shift;;
+    --executable)    [ -n "$2" ] && ! [ -z $(echo "$2"|grep -e "^--" -v) ] && EXECUTABLE="$2" && shift;;
+    --jar)           [ -n "$2" ] && ! [ -z $(echo "$2"|grep -e "^--" -v) ] && JARFILE="$2" && shift;;
+    --javaagent)     [ -n "$2" ] && ! [ -z $(echo "$2"|grep -e "^--" -v) ] && JAVAAGENT="-javaagent:$2" && shift;;
+    --proxyHost)     [ -n "$2" ] && ! [ -z $(echo "$2"|grep -e "^--" -v) ] && proxyHost="$2" && shift;;
+    --proxyPort)     [ -n "$2" ] && ! [ -z $(echo "$2"|grep -e "^--" -v) ] && proxyPort="$2" && shift;;
+    --nonProxyHosts) [ -n "$2" ] && ! [ -z $(echo "$2"|grep -e "^--" -v) ] && nonProxyHosts=$(echo $2| cut -d '=' -f2|sed 's/,/\|/g') && shift;;
+    --httpagent)     [ -n "$2" ] && ! [ -z $(echo "$2"|grep -e "^--" -v) ] && httpagent="$2" && shift;;
+    --keepAlive)     [ -n "$2" ] && ! [ -z $(echo "$2"|grep -e "^--" -v) ] && keepAlive="$2" && shift;;
+    --maxConnections)[ -n "$2" ] && ! [ -z $(echo "$2"|grep -e "^--" -v) ] && maxConnections="$2" && shift;;
+    --maxRedirects)  [ -n "$2" ] && ! [ -z $(echo "$2"|grep -e "^--" -v) ] && maxRedirects="$2" && shift;;
+    --logLevel)      [ -n "$2" ] && ! [ -z $(echo "$2"|grep -e "^--" -v) ] && addLogLevel "$2" && shift;;
     -*)              parameterFailed "Invalid parameter $1"; exit 1;;
     *)               PARAMTERS="${PARAMTERS} $1";;
     esac
@@ -261,9 +261,9 @@ done
 printEndedMessage="true"
 
 # default values, see https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/net/doc-files/net-properties.html
-[ "$CB_VERBOSE" = "true" ] && printf "${CB_LINEHEADER}Prepare parameters...${NO_COLOR}\n" 
+[ "$CB_VERBOSE" = "true" ] && printf "${CB_LINEHEADER}Prepare parameters...${NO_COLOR}\n"
 [ -z "$EXECUTABLE" ] && EXECUTABLE="java"
-[ -z "$agent" ] && agent="${EXECUTABLE#*/}"
+#[ -z "$httpagent" ] && httpagent="${EXECUTABLE#*/}"
 [ "$CB_VERBOSE" = "true" ] && printf "${CB_LINEHEADER}Set java executable [${NO_COLOR}$EXECUTABLE${HIGHLITE_LEVEL}]${NO_COLOR}\n"
 
 JAVAAGENT="${JAVAAGENT# }"
@@ -273,11 +273,13 @@ JAVAAGENT="${JAVAAGENT# }"
 [ -n "$proxyHost" ] && JAVA_OPTIONS="${JAVA_OPTIONS} -Dhttp.proxyHost=$proxyHost -Dhttps.proxyHost=$proxyHost" # proxyHost, e.g. "-Dhttp.proxyHost=192.168.1.1"
 [ -n "$proxyPort" ] && JAVA_OPTIONS="${JAVA_OPTIONS} -Dhttp.proxyPort=$proxyPort -Dhttps.proxyPort=$proxyPort" # proxyPort, e.g. "-Dhttps.proxyPort=8080"
 [ -n "$nonProxyHosts" ] && JAVA_OPTIONS="${JAVA_OPTIONS} -Dhttp.nonProxyHosts=\"$nonProxyHosts\"" # nonProxyHosts e.g. "-Dhttp.nonProxyHosts=localhost|.cluster.local|*.acpt.app.com"
-[ -n "$agent" ] && JAVA_OPTIONS="${JAVA_OPTIONS} -Dhttp.agent=$agent" # e.g. "-Dhttp.agent=java"
+[ -n "$httpagent" ] && JAVA_OPTIONS="${JAVA_OPTIONS} -Dhttp.agent=$httpagent" # e.g. "-Dhttp.agent=java"
 [ -n "$keepAlive" ] && JAVA_OPTIONS="${JAVA_OPTIONS} -Dhttp.keepAlive=$keepAlive" # e.g. "-Dhttp.keepAlive=true"
 [ -n "$maxConnections" ] && JAVA_OPTIONS="${JAVA_OPTIONS} -Dhttp.maxConnections=$maxConnections" # e.g. "-Dhttp.maxConnections=5"
 [ -n "$maxRedirects" ] && JAVA_OPTIONS="${JAVA_OPTIONS} -Dhttp.maxRedirects=$maxRedirects" # e.g. "-Dhttp.maxRedirects=20"
+[ -n "$logLevel" ] && JAVA_OPTIONS="${JAVA_OPTIONS} $logLevel"
 JAVA_OPTIONS="${JAVA_OPTIONS# }"
+
 [ "$CB_VERBOSE" = "true" ] && printf "${CB_LINEHEADER}Set java options    [${NO_COLOR}$JAVA_OPTIONS${HIGHLITE_LEVEL}]${NO_COLOR}\n"
 
 PARAMTERS="${PARAMTERS# }"
@@ -308,7 +310,7 @@ else
     printf "   ${INFO_LEVEL}JAVA${NO_COLOR}  ${javaVersion}\n"
     [ -n "$environment" ] && printf "   ${INFO_LEVEL}ENV${NO_COLOR}   $environment\n"
 
-    START_COMMAND="$EXECUTABLE \$JAVAAGENT \$JAVA_OPTIONS -jar \$JARFILE \$PARAMTERS &"
+    START_COMMAND="$EXECUTABLE \$JAVAAGENT \$JAVA_OPTIONS -jar \$JARFILE \$PARAMTERS"
     printf "%s$CB_LINE\n"
     eval "$START_COMMAND" && echo "$!" > $PID_FILE
 fi

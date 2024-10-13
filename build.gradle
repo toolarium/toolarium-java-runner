@@ -1,0 +1,13 @@
+/*
+ * build.gradle
+ *
+ * Copyright by toolarium, all rights reserved.
+ */
+apply from: "https://raw.githubusercontent.com/toolarium/common-gradle-build/master/gradle/common.gradle"
+
+
+/****************************************************************************************
+ * Define project dependencies
+ ****************************************************************************************/
+dependencies {
+}
